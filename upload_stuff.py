@@ -11,18 +11,18 @@ outgoing = img_dir + '/sub'
 global siteurl
 
 def login():
-    global siteurl
-    """Logs into the specified URL as 'maximus', returns a guid"""
-    siteurl = 'https://montcopawebdocs.filebound.com'
-    u = 'dcarson'
-    p = input('enter a password: ')
+    siteurl = input('https://')
+    u = input('Username: ')
+    p = input('Password: ')
     data = {
         'username': u,
         'password': p
     }
 
-    login = 'https://applications.filebound.com/v3/login/?fbsite=https://' + siteurl
+    login = 'https://{}/api/login'.format(siteurl)
+    #print(login)
     try:
+        #r = requests.post(login, data, verify=False)
         r = requests.post(login, data)
         guid = r.json()
         return guid
@@ -39,14 +39,16 @@ def login():
 if __name__ == '__main__':
     print('Running login code.')
     guid = login()
-    #print(guid)
+    print(guid)
 
 
 #Pull a file template from FileBound Server
 
 
-NEWFILE_string = 'https://applications.filebound.com/v3/empty?template=file&fbsite={}&guid={}'.format(siteurl, guid)
-NEWDOC_string = 'https://applications.filebound.com/v3/empty?template=document&fbsite={}&guid={}'.format(siteurl, guid)
+#NEWFILE_string = 'https://applications.filebound.com/v3/empty?template=file&fbsite={}&guid={}'.format(siteurl, guid)
+#NEWDOC_string = 'https://applications.filebound.com/v3/empty?template=document&fbsite={}&guid={}'.format(siteurl, guid)
+NEWFILE_string = 'https://{}/api/empty?template=file'.format(siteurl)
+NEWDOC_string = 'https://{}/api/empty?template=document'.format(siteurl)
 inc_filetemplate = json.loads(requests.get(NEWFILE_string).text)
 filetemplate = inc_filetemplate
 r = requests.get(NEWDOC_string)
@@ -68,15 +70,18 @@ for doc in filelist:
     with open(doc, 'rb') as current_doc:
         docstring = base64.b64encode(current_doc.read()).decode('utf-8')
         put_data = json.dumps(filetemplate)
-        NEWFILE_string = 'https://applications.filebound.com/v3/projects/25/files?fbsite={}&guid={}'.format(siteurl, guid)
+        #NEWFILE_string = 'https://applications.filebound.com/v3/projects/25/files?fbsite={}&guid={}'.format(siteurl, guid)
+        NEWFILE_string = 'https://{}/api/projects/25/files&guid={}'.format(siteurl, guid)
         try:
             #Create the file
             r = requests.put(NEWFILE_string, put_data, headers=fbheaders)
             fileId = r.text
             #print(datetime.now(est).strftime("%m/%d/%Y %H:%M:%S") + ' - Saved FileID '+ fileId)
             
-            FILE_PUT_string = 'https://applications.filebound.com/v4/files?fbsite={}&guid={}'.format(siteurl, guid)
-            DOC_PUT_string = 'https://applications.filebound.com/v4/documents/{}/?fbsite={}&guid={}'.format(fileId, siteurl, guid)
+            #FILE_PUT_string = 'https://applications.filebound.com/v4/files?fbsite={}&guid={}'.format(siteurl, guid)
+            #DOC_PUT_string = 'https://applications.filebound.com/v4/documents/{}/?fbsite={}&guid={}'.format(fileId, siteurl, guid)
+            FILE_PUT_string = 'https://{}/api/files&guid={}'.format(siteurl, guid)
+            DOC_PUT_string = 'https://{}/api/documents&guid={}'.format(siteurl, guid)
             
             currentdoc_template = doctemplate
             currentdoc_template['binaryData'] = docstring
